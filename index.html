@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Designer Portfolio - Insight ver.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: { 500: '#f43f5e', 600: '#e11d48' },
+                        dark: { 800: '#1e1e1e', 900: '#121212', 950: '#0a0a0a' }
+                    },
+                    fontFamily: { sans: ['Noto Sans KR', 'sans-serif'] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.8s ease-out forwards' },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #050505; }
+        /* Masonry Layout for Pinterest Style */
+        .masonry-grid { column-count: 1; column-gap: 1.5rem; }
+        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        
+        .break-inside-avoid { break-inside: avoid; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f43f5e; }
+
+        /* Image Hover Effect */
+        .portfolio-item:hover .overlay { opacity: 1; }
+        .portfolio-item:hover img { transform: scale(1.03); filter: brightness(0.6); }
+    </style>
+</head>
+<body class="text-white selection:bg-rose-500 selection:text-white overflow-x-hidden">
+
+    <!-- Fixed Glass Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-6 border-b border-white/5 bg-black/50 backdrop-blur-md">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="text-xl font-black tracking-widest cursor-pointer group" onclick="window.scrollTo(0,0)">
+                PORTFOLIO<span class="text-rose-500 group-hover:animate-pulse">.</span>
+            </div>
+            <div class="hidden md:flex space-x-10 text-xs font-bold uppercase tracking-widest text-neutral-500">
+                <a href="#home" class="hover:text-white transition-colors">Intro</a>
+                <a href="#works" class="hover:text-white transition-colors text-white">Works</a>
+                <a href="#about" class="hover:text-white transition-colors">Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative h-[80vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent z-10"></div>
+            <!-- Hero Background -->
+            <img src="8_파워드 바이 블레이드.png" class="w-full h-full object-cover opacity-30 animate-pulse" style="animation-duration: 4s;" onerror="this.style.opacity='0'">
+        </div>
+
+        <div class="container mx-auto px-6 z-10 relative mt-20">
+            <div class="max-w-4xl">
+                <div class="flex items-center gap-3 mb-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <span class="h-[1px] w-12 bg-rose-500 inline-block"></span>
+                    <span class="text-rose-500 font-bold tracking-widest text-xs uppercase">Game UI & Concept Art</span>
+                </div>
+                <h1 class="text-5xl md:text-8xl font-black mb-8 leading-tight tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">
+                    DESIGN <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-400 to-neutral-800">INSIGHTS</span>
+                </h1>
+                <p class="text-lg md:text-xl text-neutral-400 max-w-2xl leading-relaxed mb-10 animate-fade-in-up" style="animation-delay: 0.3s;">
+                    플레이어의 경험을 설계하는 비주얼 스토리텔링.<br/>
+                    <span class="text-white">몰입감 있는 세계관</span>과 <span class="text-white">직관적인 인터페이스</span>의 접점을 찾습니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Works Section (Masonry) -->
+    <section id="works" class="py-20 bg-[#050505] min-h-screen">
+        <div class="container mx-auto px-6">
+            
+            <!-- Category Filter -->
+            <div class="sticky top-24 z-40 bg-[#050505]/95 backdrop-blur-sm py-4 mb-12 border-b border-white/5">
+                <div class="flex flex-wrap gap-2 md:gap-4 overflow-x-auto hide-scrollbar pb-2" id="filter-container">
+                    <!-- JS Generated -->
+                </div>
+            </div>
+
+            <!-- Masonry Grid -->
+            <div id="gallery-grid" class="masonry-grid w-full">
+                <!-- JS Generated Items -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-32 bg-neutral-900 border-t border-white/5 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-rose-900/10 to-transparent pointer-events-none"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-20 items-start">
+                <div class="w-full lg:w-1/3">
+                    <h2 class="text-6xl font-black mb-8 text-white/10">PRO<br>FILE.</h2>
+                    <div class="w-full aspect-[3/4] rounded-sm overflow-hidden border border-white/10 relative">
+                        <img src="1_캐릭터 원화_반실사 (1).png" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" onerror="this.src='https://via.placeholder.com/400x600/222/555?text=Profile'">
+                        <div class="absolute bottom-4 left-4 bg-white/10 backdrop-blur-md px-4 py-2 text-xs font-bold border border-white/20">
+                            LEAD ARTIST
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-2/3 pt-10">
+                    <h3 class="text-3xl font-bold mb-6">Visual Problem Solver</h3>
+                    <p class="text-neutral-400 text-lg leading-loose mb-10">
+                        단순히 아름다운 그림을 그리는 것을 넘어, 게임의 기능과 재미를 시각적으로 풀어내는 것에 집중합니다.
+                        <strong class="text-white">서머너즈 워, 골프 스타</strong> 등의 프로젝트에서 다양한 장르적 특성을 이해하고
+                        이에 맞는 최적의 UI/UX와 아트 스타일을 제안해 왔습니다.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div>
+                            <h4 class="text-rose-500 font-bold mb-4 text-sm uppercase tracking-wider">Core Competencies</h4>
+                            <ul class="space-y-3 text-neutral-300">
+                                <li class="flex items-center gap-3">
+                                    <i class="fas fa-check text-rose-500 text-xs"></i> 직관적인 UX 기반의 UI 설계
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <i class="fas fa-check text-rose-500 text-xs"></i> 장르에 최적화된 컨셉 아트 도출
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <i class="fas fa-check text-rose-500 text-xs"></i> Unity 엔진 기반 리소스 최적화
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-rose-500 font-bold mb-4 text-sm uppercase tracking-wider">Software Proficiency</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1"><span>Photoshop</span><span>95%</span></div>
+                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[95%]"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1"><span>Illustrator</span><span>85%</span></div>
+                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[85%]"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1"><span>Unity</span><span>70%</span></div>
+                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[70%]"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12 border-t border-white/5 text-center">
+        <p class="text-neutral-600 text-sm">DESIGNED BY PORTFOLIO AI • © 2024</p>
+    </footer>
+
+    <!-- Full Screen Modal -->
+    <div id="modal" class="fixed inset-0 z-[100] bg-black/98 backdrop-blur-xl hidden transition-all duration-300 opacity-0" onclick="closeModal()">
+        <button class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-4 z-50">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+        
+        <div class="w-full h-full flex flex-col md:flex-row" onclick="event.stopPropagation()">
+            <!-- Image Area -->
+            <div class="w-full md:w-3/4 h-[60vh] md:h-full bg-[#050505] flex items-center justify-center p-4 md:p-10 relative group">
+                <img id="modal-img" src="" class="max-w-full max-h-full object-contain shadow-2xl shadow-rose-900/10">
+                <a id="modal-download" href="#" download class="absolute bottom-10 right-10 bg-white/10 hover:bg-white text-white hover:text-black px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-all opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-download mr-2"></i> Save Image
+                </a>
+            </div>
+            
+            <!-- Info Area -->
+            <div class="w-full md:w-1/4 h-auto md:h-full bg-neutral-900 border-l border-white/5 p-8 md:p-12 flex flex-col justify-center">
+                <span id="modal-category" class="text-rose-500 text-xs font-bold tracking-widest uppercase mb-4 block">CATEGORY</span>
+                <h3 id="modal-title" class="text-3xl font-bold text-white mb-6 leading-tight">Title Here</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-neutral-500 text-xs font-bold uppercase mb-2">Description</h4>
+                        <p id="modal-desc" class="text-neutral-300 leading-relaxed text-sm">설명이 들어갑니다.</p>
+                    </div>
+                    
+                    <div class="pt-6 border-t border-white/5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="text-neutral-500 text-xs font-bold uppercase mb-1">Year</h4>
+                                <p class="text-white text-sm">2023 - 2024</p>
+                            </div>
+                            <div>
+                                <h4 class="text-neutral-500 text-xs font-bold uppercase mb-1">Tool</h4>
+                                <p class="text-white text-sm">Photoshop, Unity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Configuration (Same Data, Better Presentation)
+        const portfolioItems = [
+            // Characters
+            { id: 'c1', title: '반실사 기사 클래스', category: 'character', src: '1_캐릭터 원화_반실사 (1).png', desc: '중세 판타지 세계관의 기사 초기 시안입니다. 갑옷의 재질감과 무게감을 표현하는 데 집중했습니다.', tool: 'Photoshop' },
+            { id: 'c2', title: '마법사 의상 바리에이션', category: 'character', src: '1_캐릭터 원화_반실사 (2).png', desc: '다양한 마법 속성(화염, 냉기)을 시각화한 의상 디자인입니다.', tool: 'Photoshop' },
+            { id: 'c3', title: 'NPC 마을 주민', category: 'character', src: '1_캐릭터 원화_반실사 (3).png', desc: '플레이어에게 친근감을 줄 수 있는 따뜻한 톤의 NPC 디자인입니다.', tool: 'Photoshop' },
+            { id: 'c4', title: '보스 몬스터 디자인', category: 'character', src: '1_캐릭터 원화_반실사 (4).jpg', desc: '위압감을 주는 거대 보스 몬스터의 컨셉 아트입니다.', tool: 'Photoshop' },
+            { id: 'c5', title: '캐주얼 SD 캐릭터', category: 'character', src: '4_캐릭터 원화_캐주얼.png', desc: '모바일 환경에서 가시성이 좋은 3등신 SD 캐릭터 시트입니다.', tool: 'Illustrator' },
+            { id: 'c6', title: '낚시의 신 크루', category: 'character', src: '1_낚시의 신_크루.png', desc: '스포츠 게임 특유의 활기찬 에너지를 담은 캐릭터입니다.', tool: 'Photoshop' },
+
+            // Backgrounds
+            { id: 'b1', title: '튜토리얼 숲 배경', category: 'background', src: '1_배경 원화.png', desc: '게임의 첫 인상을 결정하는 평화로운 숲 배경입니다.', tool: 'Photoshop' },
+            { id: 'b2', title: '메인 던전 입구', category: 'background', src: '2_배경 원화.png', desc: '긴장감을 조성하는 어두운 톤의 던전 입구 컨셉입니다.', tool: 'Photoshop' },
+            { id: 'b3', title: '고대 사막 유적', category: 'background', src: '3_배경 원화.png', desc: '탐험 욕구를 자극하는 신비로운 사막 유적지입니다.', tool: 'Photoshop' },
+            { id: 'b4', title: '디스토피아 시티', category: 'background', src: '3_디스토피아.png', desc: '황폐화된 미래 도시의 우울한 분위기를 표현했습니다.', tool: 'Photoshop, Blender' },
+
+            // UI / Icons (중요: UI는 세로로 긴 경우가 많음)
+            { id: 'u1', title: 'TCG 카드 프레임', category: 'ui', src: '0_UI_1_card.png', desc: '등급별 차등을 둔 카드 프레임 및 정보창 디자인입니다.', tool: 'Photoshop, After Effects' },
+            { id: 'u2', title: '스킬 아이콘 세트', category: 'ui', src: '0_UI_2_icon.png', desc: '직관적인 인지가 가능한 스킬 아이콘 모음입니다.', tool: 'Illustrator' },
+            { id: 'u3', title: '아이템 아이콘', category: 'ui', src: '2_아이콘.png', desc: '소모품 및 장비 아이콘 에셋입니다.', tool: 'Photoshop' },
+            { id: 'u4', title: '인게임 드랍 리소스', category: 'ui', src: '1_아이템.png', desc: '필드 드랍시 눈에 잘 띄도록 글로우 효과를 적용했습니다.', tool: 'Photoshop' },
+            { id: 'u5', title: '메인 로비 UI', category: 'ui', src: 'Artboard 6.png', desc: '사용자 동선을 고려한 메인 로비 레이아웃입니다.', tool: 'Figma' },
+            { id: 'u6', title: '전투 결과 화면', category: 'ui', src: 'Artboard 2.png', desc: '보상 획득의 기쁨을 극대화하는 연출 화면입니다.', tool: 'Unity, Photoshop' },
+
+            // Projects
+            { id: 'p1', title: '서머너즈 워 인게임', category: 'project', src: '2_서머너즈 워.png', desc: '턴제 전투 UI의 시인성 개선 프로젝트입니다.', tool: 'Project' },
+            { id: 'p2', title: '골프 스타 필드', category: 'project', src: '3_골프 스타.png', desc: '실사풍 골프 게임의 HUD 디자인입니다.', tool: 'Project' },
+            { id: 'p3', title: '아이모 필드', category: 'project', src: '1_아이모.png', desc: 'MMORPG의 클래식한 픽셀 아트 스타일을 구현했습니다.', tool: 'Project' },
+            { id: 'p4', title: '배틀 킹덤 사다리', category: 'project', src: '4_배틀 킹덤 사다리.png', desc: '미니게임의 재미 요소를 살린 UI 디자인입니다.', tool: 'Project' },
+            { id: 'p5', title: '퍼즐 킹덤 맵', category: 'project', src: '2_퍼즐 킹덤.png', desc: '스테이지 클리어 욕구를 자극하는 월드맵입니다.', tool: 'Project' },
+            { id: 'p6', title: '시대물(캐주얼)', category: 'project', src: '6_시대(과거)_풍(캐주얼).png', desc: '역사적 고증을 캐주얼하게 재해석한 컨셉입니다.', tool: 'Project' },
+            { id: 'p7', title: '시대물(실사)', category: 'project', src: '5_시대(과거)_풍(실사).png', desc: '무거운 분위기의 정통 사극풍 게임 컨셉입니다.', tool: 'Project' },
+            { id: 'p8', title: 'SF 슈팅 컨셉', category: 'project', src: '7_시대(미래)_풍(실사).png', desc: '미래전의 긴박함을 담은 FPS HUD 시안입니다.', tool: 'Project' },
+            { id: 'p9', title: '파워드 바이 블레이드', category: 'project', src: '8_파워드 바이 블레이드.png', desc: '메인 타이틀 로고 및 키비주얼 작업입니다.', tool: 'Project' },
+            
+            // Layouts (세로가 긴 이미지들)
+            { id: 'l1', title: 'UI 플로우 차트', category: 'design', src: 'Artboard 1.png', desc: '유저 진입부터 게임 시작까지의 UX 플로우입니다.', tool: 'Figma' },
+            { id: 'l2', title: '이벤트 팝업', category: 'design', src: 'Artboard 5.png', desc: '클릭률(CTR)을 높이기 위한 이벤트 팝업 디자인입니다.', tool: 'Photoshop' },
+            { id: 'l3', title: '상점 페이지', category: 'design', src: 'Artboard 7.png', desc: '상품 주목도를 높이는 상점 UI 레이아웃입니다.', tool: 'Photoshop' },
+            { id: 'l4', title: '캐릭터 정보창', category: 'design', src: 'Artboard 8.png', desc: '복잡한 스탯 정보를 한눈에 보여주는 정보창입니다.', tool: 'Photoshop' },
+            { id: 'l5', title: '길드 시스템', category: 'design', src: 'Artboard 9.png', desc: '커뮤니티 활성화를 위한 길드 UI 기획안입니다.', tool: 'Photoshop' },
+            { id: 'l6', title: '설정 화면', category: 'design', src: 'Artboard 10.png', desc: '직관적인 토글과 슬라이더를 적용한 설정창입니다.', tool: 'Photoshop' },
+            { id: 'l7', title: '퀘스트 목록', category: 'design', src: 'Artboard 11.png', desc: '진행 상황을 명확히 보여주는 퀘스트 UI입니다.', tool: 'Photoshop' },
+            { id: 'l8', title: '랭킹 시스템', category: 'design', src: 'Artboard 12.png', desc: '경쟁심을 유발하는 랭킹 리스트 디자인입니다.', tool: 'Photoshop' },
+            { id: 'l9', title: '로딩 화면', category: 'design', src: 'Artboard 13.png', desc: '지루함을 덜어주는 로딩 일러스트 및 팁 화면입니다.', tool: 'Photoshop' }
+        ];
+
+        const categories = [
+            { id: 'all', label: 'ALL' },
+            { id: 'character', label: 'CHARACTER' },
+            { id: 'background', label: 'ENVIRONMENTS' },
+            { id: 'ui', label: 'UI / UX' },
+            { id: 'project', label: 'PROJECTS' },
+            { id: 'design', label: 'LAYOUTS' },
+        ];
+
+        let activeCategory = 'all';
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFilters();
+            renderGallery();
+        });
+
+        // --- Functions ---
+        function renderFilters() {
+            const container = document.getElementById('filter-container');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat.id}')" 
+                    class="px-5 py-2 text-xs font-bold tracking-widest transition-all duration-300 whitespace-nowrap border rounded-full
+                    ${activeCategory === cat.id 
+                        ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
+                        : 'bg-transparent text-neutral-500 border-neutral-800 hover:border-neutral-500 hover:text-white'}">
+                    ${cat.label}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(id) {
+            activeCategory = id;
+            renderFilters();
+            const grid = document.getElementById('gallery-grid');
+            grid.classList.add('opacity-0', 'translate-y-4'); // Exit animation effect
+            setTimeout(() => {
+                renderGallery();
+                grid.classList.remove('opacity-0', 'translate-y-4'); // Enter animation
+            }, 300);
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('gallery-grid');
+            const filtered = activeCategory === 'all' 
+                ? portfolioItems 
+                : portfolioItems.filter(item => item.category === activeCategory);
+
+            grid.innerHTML = filtered.map((item, index) => `
+                <div class="portfolio-item break-inside-avoid mb-6 relative group cursor-pointer" onclick="openModal('${item.id}')" style="animation: fadeInUp 0.5s ease-out forwards; animation-delay: ${index * 0.05}s; opacity: 0;">
+                    <div class="relative overflow-hidden rounded-lg bg-[#111] border border-white/5 transition-all duration-500">
+                        <img src="${item.src}" alt="${item.title}" 
+                             class="w-full h-auto block transition-transform duration-700 ease-out"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'py-10 text-center text-neutral-700 text-xs\\'>No Image<br>${item.src}</div>'">
+                        
+                        <!-- Hover Overlay -->
+                        <div class="overlay absolute inset-0 bg-black/80 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 flex flex-col justify-center items-center p-6 text-center">
+                            <span class="text-rose-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                                ${categories.find(c => c.id === item.category)?.label || 'WORK'}
+                            </span>
+                            <h3 class="text-xl font-bold text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
+                                ${item.title}
+                            </h3>
+                            <div class="w-8 h-[1px] bg-white/30 my-3 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-150"></div>
+                            <p class="text-neutral-400 text-xs transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-200">
+                                View Details
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- Modal ---
+        function openModal(id) {
+            const item = portfolioItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-img').src = item.src;
+            document.getElementById('modal-download').href = item.src;
+            document.getElementById('modal-title').innerText = item.title;
+            document.getElementById('modal-category').innerText = categories.find(c => c.id === item.category)?.label;
+            document.getElementById('modal-desc').innerText = item.desc;
+
+            const modal = document.getElementById('modal');
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('modal-img').src = '';
+                document.body.style.overflow = '';
+            }, 300);
+        }
+    </script>
+</body>
+</html>
