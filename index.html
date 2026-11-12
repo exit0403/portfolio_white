@@ -371,12 +371,8 @@
                 onAuthStateChanged(auth, async (user) => {
                     isAdmin = Boolean(user && !user.isAnonymous);
                     updateAdminUi(user);
-                    if (user) {
-                        currentUser = user;
-                        await loadDataFromCloud();
-                    } else {
-                        currentUser = null;
-                    }
+                    currentUser = user;
+                    await loadDataFromCloud();
                 });
             } else {
                 // 파이어베이스 설정이 없으면 로컬 모드로 즉시 실행
@@ -388,7 +384,7 @@
         }
 
         async function loadDataFromCloud() {
-            if (currentUser && db) {
+            if (db) {
                 try {
                     // 1. 새로운 공용 경로 데이터 확인
                     const publicRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio', 'main_data');
