@@ -334,7 +334,17 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         try {
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const firebaseConfig = typeof __firebase_config !== 'undefined'
+                ? JSON.parse(__firebase_config)
+                : {
+                    apiKey: "AIzaSyC2pju0cCO9cvG3F9ZB3fYxtJ-Hw4ezdZ8",
+                    authDomain: "project-1833e.firebaseapp.com",
+                    projectId: "project-1833e",
+                    storageBucket: "project-1833e.firebasestorage.app",
+                    messagingSenderId: "866747410760",
+                    appId: "1:866747410760:web:755717d84363938f52eb7d",
+                    measurementId: "G-5HRQV5BX8H"
+                };
             if (Object.keys(firebaseConfig).length > 0) {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
