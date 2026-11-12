@@ -150,8 +150,18 @@
     </div>
 
     <!-- Admin Bar -->
-    <div class="fixed top-20 right-6 z-[60] bg-white p-4 rounded-2xl shadow-2xl border border-blue-100 flex flex-col items-center gap-2">
+    <div id="admin-login" class="fixed top-20 right-6 z-[60] bg-white p-4 rounded-2xl shadow-2xl border border-blue-100 flex flex-col items-center gap-2 w-64">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Admin Login</span>
+        <input id="admin-email" type="email" placeholder="관리자 이메일" class="w-full text-xs p-2 border rounded-lg outline-none">
+        <input id="admin-password" type="password" placeholder="비밀번호" class="w-full text-xs p-2 border rounded-lg outline-none">
+        <button id="admin-login-button" class="w-full bg-gray-900 text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-blue-700 transition">로그인</button>
+        <p id="admin-login-message" class="text-[10px] text-red-500 text-center"></p>
+    </div>
+
+    <div id="admin-bar" class="hidden fixed top-20 right-6 z-[60] bg-white p-4 rounded-2xl shadow-2xl border border-blue-100 flex-col items-center gap-2">
         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Edit Mode</span>
+        <span id="admin-user-label" class="text-[9px] text-gray-500 max-w-48 truncate"></span>
+        <button id="admin-logout-button" class="text-[10px] text-gray-500 hover:text-red-500 transition">로그아웃</button>
         <label class="switch">
             <input type="checkbox" id="edit-mode-toggle">
             <span class="slider"></span>
@@ -296,7 +306,7 @@
     <!-- Firebase & Main Application Logic -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getAuth, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
         const apiKey = ""; 
@@ -333,13 +343,13 @@
                 const initAuth = async () => {
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
                     }
                 };
-                initAuth();
+                // 관리자 이메일 로그인 전에는 익명 로그인을 사용하지 않습니다.
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) initAuth();
 
                 onAuthStateChanged(auth, async (user) => {
+                    updateAdminUi(user);
                     if (user) {
                         currentUser = user;
                         await loadDataFromCloud();
@@ -438,6 +448,53 @@
         window.forceSaveData = function() {
             window.saveData();
         }
+
+        function updateAdminUi(user) {
+            const login = document.getElementById('admin-login');
+            const bar = document.getElementById('admin-bar');
+            const label = document.getElementById('admin-user-label');
+            const toggle = document.getElementById('edit-mode-toggle');
+            if (user) {
+                login.classList.add('hidden');
+                bar.classList.remove('hidden');
+                bar.classList.add('flex');
+                label.textContent = user.email || '인증된 관리자';
+            } else {
+                login.classList.remove('hidden');
+                bar.classList.add('hidden');
+                bar.classList.remove('flex');
+                if (toggle.checked) {
+                    toggle.checked = false;
+                    document.body.classList.remove('edit-mode');
+                    window.renderAll();
+                }
+            }
+        }
+
+        document.getElementById('admin-login-button').addEventListener('click', async () => {
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const message = document.getElementById('admin-login-message');
+            if (!auth) {
+                message.textContent = 'Firebase 설정이 없습니다.';
+                return;
+            }
+            if (!email || !password) {
+                message.textContent = '이메일과 비밀번호를 입력하세요.';
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                message.textContent = '';
+            } catch (error) {
+                console.error('관리자 로그인 실패:', error);
+                message.textContent = '로그인 정보가 올바르지 않습니다.';
+            }
+        });
+
+        document.getElementById('admin-logout-button').addEventListener('click', async () => {
+            if (auth) await signOut(auth);
+        });
 
         function showToast(msg, isError = false) {
             const toast = document.getElementById("toast");
@@ -793,6 +850,10 @@
         // --- Infrastructure & State Managers ---
         function isEditMode() { return document.body.classList.contains('edit-mode'); }
         document.getElementById('edit-mode-toggle').addEventListener('change', (e) => {
+            if (!currentUser) {
+                e.target.checked = false;
+                return;
+            }
             document.body.classList.toggle('edit-mode', e.target.checked);
             ['hero-title', 'hero-desc', 'about-text', 'quote', 'site-logo', 'contact-title'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.contentEditable = e.target.checked;
