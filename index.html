@@ -3,362 +3,897 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Designer Portfolio - Insight ver.</title>
+    <title>AI 관리형 아티스트 포트폴리오</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        rose: { 500: '#f43f5e', 600: '#e11d48' },
-                        dark: { 800: '#1e1e1e', 900: '#121212', 950: '#0a0a0a' }
-                    },
-                    fontFamily: { sans: ['Noto Sans KR', 'sans-serif'] },
-                    animation: { 'fade-in-up': 'fadeInUp 0.8s ease-out forwards' },
-                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #050505; }
-        /* Masonry Layout for Pinterest Style */
-        .masonry-grid { column-count: 1; column-gap: 1.5rem; }
-        @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
-        @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
         
-        .break-inside-avoid { break-inside: avoid; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #f43f5e; }
+        body { font-family: 'Pretendard', sans-serif; scroll-behavior: smooth; }
 
-        /* Image Hover Effect */
-        .portfolio-item:hover .overlay { opacity: 1; }
-        .portfolio-item:hover img { transform: scale(1.03); filter: brightness(0.6); }
+        /* Edit Mode Styles */
+        .edit-only { display: none; }
+        body.edit-mode .edit-only { display: block; }
+        body.edit-mode [contenteditable="true"] { 
+            outline: 2px dashed #3b82f6; 
+            padding: 2px 5px;
+            border-radius: 4px;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .work-card { transition: all 0.3s ease; cursor: pointer; }
+        .work-card:hover { transform: translateY(-5px); }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        .video-container iframe, .video-container video {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        /* Scrollable Link Container */
+        .scrollable-link {
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            padding: 4px 0;
+        }
+        .scrollable-link::-webkit-scrollbar { display: none; }
+
+        /* Lightbox */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+        #lightbox.active { display: flex; animation: fadeIn 0.3s ease; }
+        #lightbox img, #lightbox video { max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* AI Loading Spinner */
+        .ai-loading {
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        /* Filter Tabs */
+        .filter-tab.active {
+            background-color: #1f2937;
+            color: white;
+            border-color: #1f2937;
+        }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #3b82f6; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        #link-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 100; align-items: center; justify-content: center;
+        }
+        #link-modal.active { display: flex; }
+        
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
     </style>
 </head>
-<body class="text-white selection:bg-rose-500 selection:text-white overflow-x-hidden">
+<body class="bg-gray-50 text-gray-900">
 
-    <!-- Fixed Glass Navigation -->
-    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-6 border-b border-white/5 bg-black/50 backdrop-blur-md">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <div class="text-xl font-black tracking-widest cursor-pointer group" onclick="window.scrollTo(0,0)">
-                PORTFOLIO<span class="text-rose-500 group-hover:animate-pulse">.</span>
-            </div>
-            <div class="hidden md:flex space-x-10 text-xs font-bold uppercase tracking-widest text-neutral-500">
-                <a href="#home" class="hover:text-white transition-colors">Intro</a>
-                <a href="#works" class="hover:text-white transition-colors text-white">Works</a>
-                <a href="#about" class="hover:text-white transition-colors">Profile</a>
-            </div>
-        </div>
-    </nav>
+    <!-- Toast Notification -->
+    <div id="toast"></div>
 
-    <!-- Hero Section -->
-    <section id="home" class="relative h-[80vh] flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent z-10"></div>
-            <!-- Hero Background -->
-            <img src="8_파워드 바이 블레이드.png" class="w-full h-full object-cover opacity-30 animate-pulse" style="animation-duration: 4s;" onerror="this.style.opacity='0'">
-        </div>
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="closeLightbox(event)">
+        <img src="" id="lightbox-img" class="hidden">
+        <video id="lightbox-video" class="hidden" controls></video>
+        <iframe id="lightbox-iframe" class="hidden w-full max-w-5xl h-[70vh] rounded-xl shadow-2xl" frameborder="0" allowfullscreen></iframe>
+        <button class="absolute top-6 right-6 text-white text-3xl"><i class="fas fa-times"></i></button>
+    </div>
 
-        <div class="container mx-auto px-6 z-10 relative mt-20">
-            <div class="max-w-4xl">
-                <div class="flex items-center gap-3 mb-6 animate-fade-in-up" style="animation-delay: 0.1s;">
-                    <span class="h-[1px] w-12 bg-rose-500 inline-block"></span>
-                    <span class="text-rose-500 font-bold tracking-widest text-xs uppercase">Game UI & Concept Art</span>
-                </div>
-                <h1 class="text-5xl md:text-8xl font-black mb-8 leading-tight tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">
-                    DESIGN <br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-400 to-neutral-800">INSIGHTS</span>
-                </h1>
-                <p class="text-lg md:text-xl text-neutral-400 max-w-2xl leading-relaxed mb-10 animate-fade-in-up" style="animation-delay: 0.3s;">
-                    플레이어의 경험을 설계하는 비주얼 스토리텔링.<br/>
-                    <span class="text-white">몰입감 있는 세계관</span>과 <span class="text-white">직관적인 인터페이스</span>의 접점을 찾습니다.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Works Section (Masonry) -->
-    <section id="works" class="py-20 bg-[#050505] min-h-screen">
-        <div class="container mx-auto px-6">
-            
-            <!-- Category Filter -->
-            <div class="sticky top-24 z-40 bg-[#050505]/95 backdrop-blur-sm py-4 mb-12 border-b border-white/5">
-                <div class="flex flex-wrap gap-2 md:gap-4 overflow-x-auto hide-scrollbar pb-2" id="filter-container">
-                    <!-- JS Generated -->
-                </div>
-            </div>
-
-            <!-- Masonry Grid -->
-            <div id="gallery-grid" class="masonry-grid w-full">
-                <!-- JS Generated Items -->
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-32 bg-neutral-900 border-t border-white/5 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-rose-900/10 to-transparent pointer-events-none"></div>
-        <div class="container mx-auto px-6 relative z-10">
-            <div class="flex flex-col lg:flex-row gap-20 items-start">
-                <div class="w-full lg:w-1/3">
-                    <h2 class="text-6xl font-black mb-8 text-white/10">PRO<br>FILE.</h2>
-                    <div class="w-full aspect-[3/4] rounded-sm overflow-hidden border border-white/10 relative">
-                        <img src="1_캐릭터 원화_반실사 (1).png" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" onerror="this.src='https://via.placeholder.com/400x600/222/555?text=Profile'">
-                        <div class="absolute bottom-4 left-4 bg-white/10 backdrop-blur-md px-4 py-2 text-xs font-bold border border-white/20">
-                            LEAD ARTIST
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full lg:w-2/3 pt-10">
-                    <h3 class="text-3xl font-bold mb-6">Visual Problem Solver</h3>
-                    <p class="text-neutral-400 text-lg leading-loose mb-10">
-                        단순히 아름다운 그림을 그리는 것을 넘어, 게임의 기능과 재미를 시각적으로 풀어내는 것에 집중합니다.
-                        <strong class="text-white">서머너즈 워, 골프 스타</strong> 등의 프로젝트에서 다양한 장르적 특성을 이해하고
-                        이에 맞는 최적의 UI/UX와 아트 스타일을 제안해 왔습니다.
-                    </p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div>
-                            <h4 class="text-rose-500 font-bold mb-4 text-sm uppercase tracking-wider">Core Competencies</h4>
-                            <ul class="space-y-3 text-neutral-300">
-                                <li class="flex items-center gap-3">
-                                    <i class="fas fa-check text-rose-500 text-xs"></i> 직관적인 UX 기반의 UI 설계
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <i class="fas fa-check text-rose-500 text-xs"></i> 장르에 최적화된 컨셉 아트 도출
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <i class="fas fa-check text-rose-500 text-xs"></i> Unity 엔진 기반 리소스 최적화
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="text-rose-500 font-bold mb-4 text-sm uppercase tracking-wider">Software Proficiency</h4>
-                            <div class="space-y-4">
-                                <div>
-                                    <div class="flex justify-between text-xs mb-1"><span>Photoshop</span><span>95%</span></div>
-                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[95%]"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-xs mb-1"><span>Illustrator</span><span>85%</span></div>
-                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[85%]"></div></div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-xs mb-1"><span>Unity</span><span>70%</span></div>
-                                    <div class="w-full h-1 bg-neutral-800"><div class="h-full bg-white w-[70%]"></div></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-black py-12 border-t border-white/5 text-center">
-        <p class="text-neutral-600 text-sm">DESIGNED BY PORTFOLIO AI • © 2024</p>
-    </footer>
-
-    <!-- Full Screen Modal -->
-    <div id="modal" class="fixed inset-0 z-[100] bg-black/98 backdrop-blur-xl hidden transition-all duration-300 opacity-0" onclick="closeModal()">
-        <button class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-4 z-50">
-            <i class="fas fa-times text-2xl"></i>
+    <!-- Admin Bar -->
+    <div class="fixed top-20 right-6 z-[60] bg-white p-4 rounded-2xl shadow-2xl border border-blue-100 flex flex-col items-center gap-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Edit Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="edit-mode-toggle">
+            <span class="slider"></span>
+        </label>
+        <button onclick="forceSaveData()" class="edit-only mt-2 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-blue-700 transition">
+            <i class="fas fa-cloud-upload-alt mr-1"></i> 수동 동기화
         </button>
-        
-        <div class="w-full h-full flex flex-col md:flex-row" onclick="event.stopPropagation()">
-            <!-- Image Area -->
-            <div class="w-full md:w-3/4 h-[60vh] md:h-full bg-[#050505] flex items-center justify-center p-4 md:p-10 relative group">
-                <img id="modal-img" src="" class="max-w-full max-h-full object-contain shadow-2xl shadow-rose-900/10">
-                <a id="modal-download" href="#" download class="absolute bottom-10 right-10 bg-white/10 hover:bg-white text-white hover:text-black px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md transition-all opacity-0 group-hover:opacity-100">
-                    <i class="fas fa-download mr-2"></i> Save Image
-                </a>
-            </div>
-            
-            <!-- Info Area -->
-            <div class="w-full md:w-1/4 h-auto md:h-full bg-neutral-900 border-l border-white/5 p-8 md:p-12 flex flex-col justify-center">
-                <span id="modal-category" class="text-rose-500 text-xs font-bold tracking-widest uppercase mb-4 block">CATEGORY</span>
-                <h3 id="modal-title" class="text-3xl font-bold text-white mb-6 leading-tight">Title Here</h3>
-                
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="text-neutral-500 text-xs font-bold uppercase mb-2">Description</h4>
-                        <p id="modal-desc" class="text-neutral-300 leading-relaxed text-sm">설명이 들어갑니다.</p>
-                    </div>
-                    
-                    <div class="pt-6 border-t border-white/5">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 class="text-neutral-500 text-xs font-bold uppercase mb-1">Year</h4>
-                                <p class="text-white text-sm">2023 - 2024</p>
-                            </div>
-                            <div>
-                                <h4 class="text-neutral-500 text-xs font-bold uppercase mb-1">Tool</h4>
-                                <p class="text-white text-sm">Photoshop, Unity</p>
-                            </div>
-                        </div>
-                    </div>
+    </div>
+
+    <!-- Link Modal -->
+    <div id="link-modal">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 text-left">
+            <h3 class="text-xl font-bold mb-4 text-center">프로젝트 추가</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Project URL (YouTube/Direct Video Link)</label>
+                    <input type="text" id="url-input" class="w-full border p-3 rounded-xl text-sm mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://...">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Thumbnail URL (Optional)</label>
+                    <input type="text" id="thumb-input" class="w-full border p-3 rounded-xl text-sm mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="썸네일 이미지 주소">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase">Category (2d, 3d, video...)</label>
+                    <input type="text" id="category-input-text" class="w-full border p-3 rounded-xl text-sm mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2d, 3d, 영상 등">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="addLinkProject()" class="flex-grow bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">추가하기</button>
+                    <button onclick="closeModal()" class="px-6 bg-gray-100 font-bold py-3 rounded-xl hover:bg-gray-200 transition">취소</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Data Configuration (Same Data, Better Presentation)
-        const portfolioItems = [
-            // Characters
-            { id: 'c1', title: '반실사 기사 클래스', category: 'character', src: '1_캐릭터 원화_반실사 (1).png', desc: '중세 판타지 세계관의 기사 초기 시안입니다. 갑옷의 재질감과 무게감을 표현하는 데 집중했습니다.', tool: 'Photoshop' },
-            { id: 'c2', title: '마법사 의상 바리에이션', category: 'character', src: '1_캐릭터 원화_반실사 (2).png', desc: '다양한 마법 속성(화염, 냉기)을 시각화한 의상 디자인입니다.', tool: 'Photoshop' },
-            { id: 'c3', title: 'NPC 마을 주민', category: 'character', src: '1_캐릭터 원화_반실사 (3).png', desc: '플레이어에게 친근감을 줄 수 있는 따뜻한 톤의 NPC 디자인입니다.', tool: 'Photoshop' },
-            { id: 'c4', title: '보스 몬스터 디자인', category: 'character', src: '1_캐릭터 원화_반실사 (4).jpg', desc: '위압감을 주는 거대 보스 몬스터의 컨셉 아트입니다.', tool: 'Photoshop' },
-            { id: 'c5', title: '캐주얼 SD 캐릭터', category: 'character', src: '4_캐릭터 원화_캐주얼.png', desc: '모바일 환경에서 가시성이 좋은 3등신 SD 캐릭터 시트입니다.', tool: 'Illustrator' },
-            { id: 'c6', title: '낚시의 신 크루', category: 'character', src: '1_낚시의 신_크루.png', desc: '스포츠 게임 특유의 활기찬 에너지를 담은 캐릭터입니다.', tool: 'Photoshop' },
-
-            // Backgrounds
-            { id: 'b1', title: '튜토리얼 숲 배경', category: 'background', src: '1_배경 원화.png', desc: '게임의 첫 인상을 결정하는 평화로운 숲 배경입니다.', tool: 'Photoshop' },
-            { id: 'b2', title: '메인 던전 입구', category: 'background', src: '2_배경 원화.png', desc: '긴장감을 조성하는 어두운 톤의 던전 입구 컨셉입니다.', tool: 'Photoshop' },
-            { id: 'b3', title: '고대 사막 유적', category: 'background', src: '3_배경 원화.png', desc: '탐험 욕구를 자극하는 신비로운 사막 유적지입니다.', tool: 'Photoshop' },
-            { id: 'b4', title: '디스토피아 시티', category: 'background', src: '3_디스토피아.png', desc: '황폐화된 미래 도시의 우울한 분위기를 표현했습니다.', tool: 'Photoshop, Blender' },
-
-            // UI / Icons (중요: UI는 세로로 긴 경우가 많음)
-            { id: 'u1', title: 'TCG 카드 프레임', category: 'ui', src: '0_UI_1_card.png', desc: '등급별 차등을 둔 카드 프레임 및 정보창 디자인입니다.', tool: 'Photoshop, After Effects' },
-            { id: 'u2', title: '스킬 아이콘 세트', category: 'ui', src: '0_UI_2_icon.png', desc: '직관적인 인지가 가능한 스킬 아이콘 모음입니다.', tool: 'Illustrator' },
-            { id: 'u3', title: '아이템 아이콘', category: 'ui', src: '2_아이콘.png', desc: '소모품 및 장비 아이콘 에셋입니다.', tool: 'Photoshop' },
-            { id: 'u4', title: '인게임 드랍 리소스', category: 'ui', src: '1_아이템.png', desc: '필드 드랍시 눈에 잘 띄도록 글로우 효과를 적용했습니다.', tool: 'Photoshop' },
-            { id: 'u5', title: '메인 로비 UI', category: 'ui', src: 'Artboard 6.png', desc: '사용자 동선을 고려한 메인 로비 레이아웃입니다.', tool: 'Figma' },
-            { id: 'u6', title: '전투 결과 화면', category: 'ui', src: 'Artboard 2.png', desc: '보상 획득의 기쁨을 극대화하는 연출 화면입니다.', tool: 'Unity, Photoshop' },
-
-            // Projects
-            { id: 'p1', title: '서머너즈 워 인게임', category: 'project', src: '2_서머너즈 워.png', desc: '턴제 전투 UI의 시인성 개선 프로젝트입니다.', tool: 'Project' },
-            { id: 'p2', title: '골프 스타 필드', category: 'project', src: '3_골프 스타.png', desc: '실사풍 골프 게임의 HUD 디자인입니다.', tool: 'Project' },
-            { id: 'p3', title: '아이모 필드', category: 'project', src: '1_아이모.png', desc: 'MMORPG의 클래식한 픽셀 아트 스타일을 구현했습니다.', tool: 'Project' },
-            { id: 'p4', title: '배틀 킹덤 사다리', category: 'project', src: '4_배틀 킹덤 사다리.png', desc: '미니게임의 재미 요소를 살린 UI 디자인입니다.', tool: 'Project' },
-            { id: 'p5', title: '퍼즐 킹덤 맵', category: 'project', src: '2_퍼즐 킹덤.png', desc: '스테이지 클리어 욕구를 자극하는 월드맵입니다.', tool: 'Project' },
-            { id: 'p6', title: '시대물(캐주얼)', category: 'project', src: '6_시대(과거)_풍(캐주얼).png', desc: '역사적 고증을 캐주얼하게 재해석한 컨셉입니다.', tool: 'Project' },
-            { id: 'p7', title: '시대물(실사)', category: 'project', src: '5_시대(과거)_풍(실사).png', desc: '무거운 분위기의 정통 사극풍 게임 컨셉입니다.', tool: 'Project' },
-            { id: 'p8', title: 'SF 슈팅 컨셉', category: 'project', src: '7_시대(미래)_풍(실사).png', desc: '미래전의 긴박함을 담은 FPS HUD 시안입니다.', tool: 'Project' },
-            { id: 'p9', title: '파워드 바이 블레이드', category: 'project', src: '8_파워드 바이 블레이드.png', desc: '메인 타이틀 로고 및 키비주얼 작업입니다.', tool: 'Project' },
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="text-xl font-bold tracking-tighter" id="site-logo" onblur="saveData()">LEESANGMIN</a>
             
-            // Layouts (세로가 긴 이미지들)
-            { id: 'l1', title: 'UI 플로우 차트', category: 'design', src: 'Artboard 1.png', desc: '유저 진입부터 게임 시작까지의 UX 플로우입니다.', tool: 'Figma' },
-            { id: 'l2', title: '이벤트 팝업', category: 'design', src: 'Artboard 5.png', desc: '클릭률(CTR)을 높이기 위한 이벤트 팝업 디자인입니다.', tool: 'Photoshop' },
-            { id: 'l3', title: '상점 페이지', category: 'design', src: 'Artboard 7.png', desc: '상품 주목도를 높이는 상점 UI 레이아웃입니다.', tool: 'Photoshop' },
-            { id: 'l4', title: '캐릭터 정보창', category: 'design', src: 'Artboard 8.png', desc: '복잡한 스탯 정보를 한눈에 보여주는 정보창입니다.', tool: 'Photoshop' },
-            { id: 'l5', title: '길드 시스템', category: 'design', src: 'Artboard 9.png', desc: '커뮤니티 활성화를 위한 길드 UI 기획안입니다.', tool: 'Photoshop' },
-            { id: 'l6', title: '설정 화면', category: 'design', src: 'Artboard 10.png', desc: '직관적인 토글과 슬라이더를 적용한 설정창입니다.', tool: 'Photoshop' },
-            { id: 'l7', title: '퀘스트 목록', category: 'design', src: 'Artboard 11.png', desc: '진행 상황을 명확히 보여주는 퀘스트 UI입니다.', tool: 'Photoshop' },
-            { id: 'l8', title: '랭킹 시스템', category: 'design', src: 'Artboard 12.png', desc: '경쟁심을 유발하는 랭킹 리스트 디자인입니다.', tool: 'Photoshop' },
-            { id: 'l9', title: '로딩 화면', category: 'design', src: 'Artboard 13.png', desc: '지루함을 덜어주는 로딩 일러스트 및 팁 화면입니다.', tool: 'Photoshop' }
-        ];
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 text-sm font-semibold">
+                <a href="#works" class="hover:text-blue-600 transition">WORKS</a>
+                <a href="#about" class="hover:text-blue-600 transition">ABOUT</a>
+                <a href="#contact" class="hover:text-blue-600 transition">CONTACT</a>
+            </div>
 
-        const categories = [
-            { id: 'all', label: 'ALL' },
-            { id: 'character', label: 'CHARACTER' },
-            { id: 'background', label: 'ENVIRONMENTS' },
-            { id: 'ui', label: 'UI / UX' },
-            { id: 'project', label: 'PROJECTS' },
-            { id: 'design', label: 'LAYOUTS' },
-        ];
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-2xl focus:outline-none text-gray-700">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
 
-        let activeCategory = 'all';
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-gray-100 absolute w-full left-0 top-16 shadow-lg">
+            <div class="flex flex-col px-6 py-4 space-y-4 text-sm font-semibold text-center">
+                <a href="#works" class="hover:text-blue-600 block py-2" onclick="toggleMobileMenu()">WORKS</a>
+                <a href="#about" class="hover:text-blue-600 block py-2" onclick="toggleMobileMenu()">ABOUT</a>
+                <a href="#contact" class="hover:text-blue-600 block py-2" onclick="toggleMobileMenu()">CONTACT</a>
+            </div>
+        </div>
+    </nav>
 
-        // --- Init ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderFilters();
-            renderGallery();
-        });
+    <!-- Hero Section -->
+    <header class="pt-32 pb-20 px-6">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight" id="hero-title" onblur="saveData()">
+                Game Artist & <br><span class="text-blue-600">Creative Vision</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed" id="hero-desc" onblur="saveData()">
+                AI 기술과 아트를 결합하여 차세대 비주얼 경험을 창조합니다.
+            </p>
+        </div>
+    </header>
 
-        // --- Functions ---
-        function renderFilters() {
-            const container = document.getElementById('filter-container');
-            container.innerHTML = categories.map(cat => `
-                <button onclick="setCategory('${cat.id}')" 
-                    class="px-5 py-2 text-xs font-bold tracking-widest transition-all duration-300 whitespace-nowrap border rounded-full
-                    ${activeCategory === cat.id 
-                        ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
-                        : 'bg-transparent text-neutral-500 border-neutral-800 hover:border-neutral-500 hover:text-white'}">
-                    ${cat.label}
-                </button>
-            `).join('');
+    <!-- Portfolio Section -->
+    <section id="works" class="py-20 px-6 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2 text-gray-800">Projects</h2>
+                    <p class="text-gray-500">이미지나 영상을 드래그하여 업로드하세요. (영상 파일도 지원합니다)</p>
+                </div>
+                <!-- Filter Tabs -->
+                <div class="flex flex-wrap gap-2" id="filter-container">
+                    <button class="filter-tab active px-5 py-2 rounded-full border text-sm font-bold transition" onclick="setFilter('all')">프로젝트</button>
+                    <button class="filter-tab px-5 py-2 rounded-full border text-sm font-bold transition" onclick="setFilter('2d')">2D</button>
+                    <button class="filter-tab px-5 py-2 rounded-full border text-sm font-bold transition" onclick="setFilter('3d')">3D</button>
+                    <button class="filter-tab px-5 py-2 rounded-full border text-sm font-bold transition" onclick="setFilter('video')">영상</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="work-grid">
+                <!-- Drop Zone -->
+                <div class="edit-only flex flex-col gap-4">
+                    <div id="drop-zone" class="drop-zone h-48 rounded-2xl flex flex-col items-center justify-center text-gray-400 gap-2 hover:text-blue-500 hover:border-blue-300 transition cursor-pointer bg-gray-50">
+                        <i class="fas fa-upload text-3xl"></i>
+                        <p class="text-xs font-bold text-center">파일 드래그 업로드<br>(이미지 및 동영상)</p>
+                        <input type="file" id="file-input" class="hidden" accept="image/*,video/*">
+                    </div>
+                    <button onclick="openModal()" class="w-full bg-blue-50 py-4 rounded-2xl border-2 border-blue-200 border-dashed text-blue-600 font-bold hover:bg-blue-100 transition">
+                        <i class="fas fa-plus-circle mr-2"></i> 외부 링크 추가 (YouTube 등)
+                    </button>
+                </div>
+                
+                <!-- Project cards go here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6 border-t border-gray-100 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <div>
+                    <h2 class="text-4xl font-bold mb-6 text-gray-800">Experience</h2>
+                    <div id="about-text" class="text-gray-600 mb-8 leading-relaxed whitespace-pre-wrap" onblur="saveData()">경력과 소개 내용을 자유롭게 입력하세요.</div>
+                    <div class="space-y-6" id="career-list"></div>
+                    <button class="edit-only mt-6 text-blue-600 font-bold text-sm hover:underline" onclick="addCareer()">+ 경력 추가</button>
+                </div>
+                <div class="bg-gray-900 text-white p-10 rounded-3xl h-fit shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+                    <h3 class="text-2xl font-bold mb-6 italic" id="quote" onblur="saveData()">"기술은 창의성을 실현하는 최고의 도구입니다."</h3>
+                    <div class="space-y-4" id="skill-list"></div>
+                    <button class="edit-only mt-4 text-gray-400 text-xs hover:text-white transition" onclick="addSkill()">+ 스킬 추가</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <footer id="contact" class="py-20 px-6 bg-gray-900 text-white text-center">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-bold mb-10" id="contact-title" onblur="saveData()">Contact</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" id="contact-info">
+                <!-- Contact info via JS -->
+            </div>
+            <button class="edit-only mx-auto mb-8 bg-gray-800 text-gray-400 text-xs px-4 py-2 rounded-full border border-gray-700 hover:text-white hover:border-blue-500 transition" onclick="addContact()">+ 연락처 항목 추가</button>
+            <p class="text-gray-500 text-sm mt-8">© 2026 AI Portfolio Lab. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase & Main Application Logic -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        const apiKey = ""; 
+        let currentFilter = 'all';
+        
+        let state = { hero: {}, projects: [], careers: [], skills: [], contact: [] };
+
+        const defaultData = {
+            siteLogo: "LEESANGMIN",
+            hero: { title: "Game Artist & <br><span class='text-blue-600'>Creative Vision</span>", desc: "이미지나 영상을 드래그하여 포트폴리오를 구성하세요." },
+            aboutText: "경력과 소개 내용을 자유롭게 입력하세요.",
+            quote: "\"기술은 창의성을 실현하는 최고의 도구입니다.\"",
+            contactTitle: "Contact",
+            projects: [
+                { id: 1, type: 'image', category: '2d', url: 'https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=800', thumbnailUrl: '', title: '샘플 프로젝트', desc: '편집 모드에서 삭제하고 자신의 작품을 올리세요.', tools: 'Photoshop' }
+            ],
+            careers: [{ id: 1, title: '포트폴리오 시작', date: '2026.03', desc: '작업물을 관리해보세요.' }],
+            skills: [{ id: 1, name: 'Video Editing', level: '90%' }],
+            contact: [{ id: 1, label: 'Email', value: 'contact@example.com', icon: 'fa-envelope' }]
+        };
+
+        // --- Firebase Setup (Cloud Save) ---
+        let app, auth, db;
+        let currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        try {
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            if (Object.keys(firebaseConfig).length > 0) {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadDataFromCloud();
+                    } else {
+                        currentUser = null;
+                    }
+                });
+            } else {
+                // 파이어베이스 설정이 없으면 로컬 모드로 즉시 실행
+                setTimeout(loadDataFromCloud, 100);
+            }
+        } catch (e) {
+            console.warn("Firebase 초기화 건너뜀 (로컬 모드):", e);
+            setTimeout(loadDataFromCloud, 100);
         }
 
-        function setCategory(id) {
-            activeCategory = id;
-            renderFilters();
-            const grid = document.getElementById('gallery-grid');
-            grid.classList.add('opacity-0', 'translate-y-4'); // Exit animation effect
-            setTimeout(() => {
-                renderGallery();
-                grid.classList.remove('opacity-0', 'translate-y-4'); // Enter animation
-            }, 300);
+        async function loadDataFromCloud() {
+            if (currentUser && db) {
+                try {
+                    // 1. 새로운 공용 경로 데이터 확인
+                    const publicRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio', 'main_data');
+                    const publicSnap = await getDoc(publicRef);
+                    if (publicSnap.exists()) {
+                        const parsed = publicSnap.data();
+                        state = { ...defaultData, ...parsed };
+                        if (parsed.hero) state.hero = { ...defaultData.hero, ...parsed.hero };
+                        localStorage.setItem('portfolio_data_v10', JSON.stringify(state));
+                        window.renderAll();
+                        return;
+                    }
+
+                    // 2. 기존 개인 경로 데이터 확인 및 자동 복구 (마이그레이션)
+                    const privateRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'portfolio', 'data');
+                    const privateSnap = await getDoc(privateRef);
+                    if (privateSnap.exists()) {
+                        const parsed = privateSnap.data();
+                        state = { ...defaultData, ...parsed };
+                        if (parsed.hero) state.hero = { ...defaultData.hero, ...parsed.hero };
+                        window.saveData(); // 복구된 데이터를 새로운 공용 경로로 저장
+                        window.renderAll();
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Cloud Load Error:", e);
+                }
+            }
+            
+            // 클라우드 데이터를 못 가져오면 로컬 스토리지 데이터로 폴백
+            const localData = localStorage.getItem('portfolio_data_v10') || localStorage.getItem('portfolio_data_v9');
+            if (localData) {
+                state = { ...defaultData, ...JSON.parse(localData) };
+                window.saveData();
+            } else {
+                state = JSON.parse(JSON.stringify(defaultData));
+            }
+            window.renderAll();
         }
 
-        function renderGallery() {
-            const grid = document.getElementById('gallery-grid');
-            const filtered = activeCategory === 'all' 
-                ? portfolioItems 
-                : portfolioItems.filter(item => item.category === activeCategory);
+        window.saveData = async function() {
+            // Update texts from UI
+            const sl = document.getElementById('site-logo');
+            const ht = document.getElementById('hero-title');
+            const hd = document.getElementById('hero-desc');
+            const at = document.getElementById('about-text');
+            const qt = document.getElementById('quote');
+            const ct = document.getElementById('contact-title');
+            
+            if(sl) state.siteLogo = sl.innerText;
+            if(ht) state.hero.title = ht.innerHTML;
+            if(hd) state.hero.desc = hd.innerText;
+            if(at) state.aboutText = at.innerText;
+            if(qt) state.quote = qt.innerText;
+            if(ct) state.contactTitle = ct.innerText;
+            
+            try {
+                localStorage.setItem('portfolio_data_v10', JSON.stringify(state));
+            } catch(e) {
+                console.warn("로컬 저장소 공간 부족", e);
+            }
 
-            grid.innerHTML = filtered.map((item, index) => `
-                <div class="portfolio-item break-inside-avoid mb-6 relative group cursor-pointer" onclick="openModal('${item.id}')" style="animation: fadeInUp 0.5s ease-out forwards; animation-delay: ${index * 0.05}s; opacity: 0;">
-                    <div class="relative overflow-hidden rounded-lg bg-[#111] border border-white/5 transition-all duration-500">
-                        <img src="${item.src}" alt="${item.title}" 
-                             class="w-full h-auto block transition-transform duration-700 ease-out"
-                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'py-10 text-center text-neutral-700 text-xs\\'>No Image<br>${item.src}</div>'">
-                        
-                        <!-- Hover Overlay -->
-                        <div class="overlay absolute inset-0 bg-black/80 backdrop-blur-[2px] opacity-0 transition-opacity duration-300 flex flex-col justify-center items-center p-6 text-center">
-                            <span class="text-rose-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
-                                ${categories.find(c => c.id === item.category)?.label || 'WORK'}
+            if (!currentUser || !db) {
+                showToast("기기에 저장되었습니다. (로컬 모드)");
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio', 'main_data');
+                await setDoc(docRef, state);
+                showToast("기기 및 클라우드에 저장되었습니다.");
+            } catch (e) {
+                console.error(e);
+                showToast("기기에만 저장되었습니다. (클라우드 용량 초과)", true);
+            }
+        }
+
+        window.forceSaveData = function() {
+            window.saveData();
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById("toast");
+            toast.innerHTML = isError ? `<i class="fas fa-exclamation-circle text-red-400 mr-2"></i>${msg}` : `<i class="fas fa-check-circle text-green-400 mr-2"></i>${msg}`;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // --- Image Compression Tool ---
+        function compressImage(base64, maxWidth = 800, quality = 0.6) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = base64;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => resolve(base64); // fallback if error
+            });
+        }
+
+        // --- AI & Video Checkers ---
+        function isEmbedVideo(url) {
+            return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
+        }
+
+        async function analyzeImage(base64Data, mimeType) {
+            if (!mimeType.startsWith('image')) return { title: "새로운 영상 프로젝트", description: "동영상 프로젝트입니다.", category: "video", tools: "Video Tool" };
+            const prompt = `Analyze this image and provide a JSON response with: 'title', 'description' (in Korean, max 2 sentences), 'category' ('2d' or '3d'), 'tools' (comma separated tools).`;
+            
+            try {
+                const base64String = base64Data.split(',')[1];
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: mimeType, data: base64String } }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    title: { type: "STRING" },
+                                    description: { type: "STRING" },
+                                    category: { type: "STRING" },
+                                    tools: { type: "STRING" }
+                                },
+                                required: ["title", "description", "category", "tools"]
+                            }
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 오류: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!text) {
+                    throw new Error("API 결과가 비어있습니다.");
+                }
+
+                const parsed = JSON.parse(text);
+                return {
+                    title: parsed.title || "새 프로젝트",
+                    desc: parsed.description || "설명이 없습니다.",
+                    category: parsed.category === '3d' ? '3d' : '2d',
+                    tools: parsed.tools || "Photoshop"
+                };
+            } catch (error) {
+                console.error("AI 분석 중 오류가 발생했습니다:", error);
+                return { 
+                    title: "업로드된 이미지", 
+                    desc: "분석을 완료하지 못했습니다. 직접 입력해주세요.", 
+                    category: "2d", 
+                    tools: "" 
+                };
+            }
+        }
+
+        // --- Initialization ---
+        window.onload = () => {
+            const savedData = localStorage.getItem('portfolio_data_v10') || localStorage.getItem('portfolio_data_v9');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                state = { ...defaultData, ...parsed }; 
+                if (parsed.hero) state.hero = { ...defaultData.hero, ...parsed.hero };
+            } else {
+                state = JSON.parse(JSON.stringify(defaultData));
+            }
+            window.renderAll();
+        };
+
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                const text = tab.innerText.toLowerCase();
+                if (filter === 'all' && text.includes('프로젝트')) tab.classList.add('active');
+                else if (text === filter || (filter === 'video' && text === '영상')) tab.classList.add('active');
+                else tab.classList.remove('active');
+            });
+            window.renderAll();
+        }
+
+        window.renderAll = function() {
+            if(state.siteLogo) document.getElementById('site-logo').innerText = state.siteLogo;
+            if(state.hero.title) document.getElementById('hero-title').innerHTML = state.hero.title;
+            if(state.hero.desc) document.getElementById('hero-desc').innerText = state.hero.desc;
+            if(state.aboutText) document.getElementById('about-text').innerText = state.aboutText;
+            if(state.quote) document.getElementById('quote').innerText = state.quote;
+            if(state.contactTitle) document.getElementById('contact-title').innerText = state.contactTitle;
+
+            const grid = document.getElementById('work-grid');
+            
+            // 기존 프로젝트 카드만 삭제 (업로드 드롭존 영역 및 이벤트 보호)
+            grid.querySelectorAll('.work-card').forEach(card => card.remove());
+
+            const filteredProjects = currentFilter === 'all' 
+                ? state.projects 
+                : state.projects.filter(p => p.category === currentFilter);
+
+            filteredProjects.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "work-card bg-white rounded-2xl overflow-hidden relative group shadow-sm border border-gray-100 flex flex-col";
+                
+                const isVideo = p.type === 'video';
+                const isEmbed = isVideo && isEmbedVideo(p.url);
+                const displayThumbnail = p.thumbnailUrl || (isVideo ? '' : p.url);
+
+                let mediaHtml = "";
+                if (isVideo && isEmbed && !isEditMode() && !p.thumbnailUrl) {
+                    mediaHtml = `<div class="video-container"><iframe src="${p.url}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    const poster = displayThumbnail || (isVideo ? 'https://via.placeholder.com/600x400/000000/FFFFFF?text=Video+File' : '');
+                    mediaHtml = `<div class="h-64 overflow-hidden relative group/img cursor-pointer" onclick="viewProjectFullscreen(${p.id})">
+                        <img src="${poster}" class="w-full h-full object-cover transition duration-700 group-hover/img:scale-110">
+                        ${isVideo ? '<div class="absolute inset-0 flex items-center justify-center bg-black/20 text-white text-4xl"><i class="fas fa-play-circle"></i></div>' : ''}
+                      </div>`;
+                }
+
+                card.innerHTML = `
+                    ${mediaHtml}
+                    ${p.loading ? '<div class="ai-loading"><i class="fas fa-circle-notch fa-spin text-blue-500 text-2xl"></i><span class="text-[10px] mt-2 font-bold text-blue-500">처리 중...</span></div>' : ''}
+                    <button class="edit-only absolute top-4 right-4 z-10 bg-red-500/80 text-white w-8 h-8 rounded-full backdrop-blur hover:bg-red-600 transition" onclick="event.stopPropagation(); deleteProject(${p.id})">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                    <div class="p-6 text-left flex-grow space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[9px] font-extrabold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded cursor-pointer border border-blue-100"
+                                  contenteditable="${isEditMode()}" 
+                                  onblur="updateProject(${p.id}, 'category', this.innerText.toLowerCase()); renderAll();">
+                                ${p.category}
                             </span>
-                            <h3 class="text-xl font-bold text-white mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
-                                ${item.title}
-                            </h3>
-                            <div class="w-8 h-[1px] bg-white/30 my-3 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-150"></div>
-                            <p class="text-neutral-400 text-xs transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-200">
-                                View Details
-                            </p>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 leading-tight" contenteditable="${isEditMode()}" onblur="updateProject(${p.id}, 'title', this.innerText)">${p.title}</h3>
+                        <p class="text-gray-500 text-xs leading-relaxed" contenteditable="${isEditMode()}" onblur="updateProject(${p.id}, 'desc', this.innerText)">${p.desc}</p>
+                        
+                        <div class="pt-2 border-t border-gray-50">
+                            <div class="flex items-center gap-2 text-[10px] text-gray-400">
+                                <i class="fas fa-link shrink-0"></i>
+                                <div class="scrollable-link flex-grow">
+                                    <span class="italic truncate block">${p.url.substring(0, 50)}...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            ${(p.tools || "").split(',').map(t => t.trim() ? `<span class="bg-gray-50 text-[10px] text-gray-400 px-2 py-0.5 rounded-md border border-gray-100 font-medium">${t}</span>` : '').join('')}
+                        </div>
+
+                        <!-- Update UI for Image/Video Edit -->
+                        <div class="edit-only space-y-3 pt-4 mt-2 border-t border-gray-100 bg-gray-50/50 -mx-6 -mb-6 p-6">
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">실제 원본 (이미지/영상 URL)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" class="flex-grow text-[11px] p-2 border rounded mt-1 bg-white outline-none" 
+                                           value="${p.url.startsWith('data:') ? '로컬 직접 업로드 파일' : p.url}" 
+                                           ${p.url.startsWith('data:') ? 'readonly' : ''}
+                                           onchange="if(!this.value.startsWith('로컬')) { updateProject(${p.id}, 'url', this.value); renderAll(); }">
+                                    <button class="bg-red-50 text-red-500 hover:bg-red-100 px-2 rounded mt-1 text-[10px] font-bold whitespace-nowrap transition" onclick="triggerMainUpload(${p.id})" title="새 원본 파일 덮어쓰기"><i class="fas fa-upload"></i> 원본</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">썸네일 이미지 URL</label>
+                                <div class="flex gap-2">
+                                    <input type="text" class="flex-grow text-[11px] p-2 border rounded mt-1 bg-white outline-none" 
+                                           value="${(p.thumbnailUrl || '').startsWith('data:') ? '로컬 썸네일 업로드 파일' : (p.thumbnailUrl || '')}" 
+                                           ${(p.thumbnailUrl || '').startsWith('data:') ? 'readonly' : ''}
+                                           placeholder="공백 시 원본 이미지 사용" 
+                                           onchange="if(!this.value.startsWith('로컬')) { updateProject(${p.id}, 'thumbnailUrl', this.value); renderAll(); }">
+                                    <button class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 rounded mt-1 text-[10px] font-bold whitespace-nowrap transition" onclick="triggerThumbUpload(${p.id})" title="새 썸네일 업로드"><i class="fas fa-image"></i> 썸네일</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">사용 툴 (쉼표로 구분)</label>
+                                <input type="text" class="w-full text-[11px] p-2 border rounded mt-1 bg-white outline-none" value="${p.tools || ''}" onchange="updateProject(${p.id}, 'tools', this.value); renderAll();">
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+                grid.appendChild(card);
+            });
+
+            renderSecondaryInfo();
         }
 
-        // --- Modal ---
-        function openModal(id) {
-            const item = portfolioItems.find(i => i.id === id);
-            if (!item) return;
+        window.viewProjectFullscreen = function(id) {
+            if (isEditMode()) return;
+            const p = state.projects.find(x => x.id === id);
+            if (!p) return;
 
-            document.getElementById('modal-img').src = item.src;
-            document.getElementById('modal-download').href = item.src;
-            document.getElementById('modal-title').innerText = item.title;
-            document.getElementById('modal-category').innerText = categories.find(c => c.id === item.category)?.label;
-            document.getElementById('modal-desc').innerText = item.desc;
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lightbox-img');
+            const lbVid = document.getElementById('lightbox-video');
+            const lbIframe = document.getElementById('lightbox-iframe');
 
-            const modal = document.getElementById('modal');
-            modal.classList.remove('hidden');
-            // Trigger reflow
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            document.body.style.overflow = 'hidden';
+            lbImg.classList.add('hidden');
+            lbVid.classList.add('hidden');
+            lbIframe.classList.add('hidden');
+            
+            lbVid.pause();
+            lbVid.src = '';
+            lbIframe.src = '';
+
+            if (p.type === 'video') {
+                if (isEmbedVideo(p.url)) {
+                    lbIframe.src = p.url;
+                    lbIframe.classList.remove('hidden');
+                } else {
+                    lbVid.src = p.url;
+                    lbVid.classList.remove('hidden');
+                    lbVid.play();
+                }
+            } else {
+                lbImg.src = p.url;
+                lbImg.classList.remove('hidden');
+            }
+            lb.classList.add('active');
         }
 
-        function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                document.getElementById('modal-img').src = '';
-                document.body.style.overflow = '';
-            }, 300);
+        window.closeLightbox = function(e) {
+            // 비디오나 iframe 조작 영역을 클릭했을 땐 창이 닫히지 않도록 방어
+            if (e && (e.target.tagName === 'VIDEO' || e.target.tagName === 'IFRAME')) return;
+            
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('active');
+            
+            const vid = document.getElementById('lightbox-video');
+            vid.pause();
+            vid.src = '';
+            document.getElementById('lightbox-iframe').src = '';
         }
+
+        window.triggerMainUpload = function(projId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = async (re) => {
+                    let data = re.target.result;
+                    const newType = file.type.startsWith('video') ? 'video' : 'image';
+                    if (newType === 'image') data = await compressImage(data);
+                    
+                    updateProject(projId, 'url', data);
+                    updateProject(projId, 'type', newType);
+                    window.renderAll();
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        window.triggerThumbUpload = function(projId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = async (re) => {
+                    const data = await compressImage(re.target.result);
+                    updateProject(projId, 'thumbnailUrl', data);
+                    window.renderAll();
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        }
+
+        async function handleFiles(files) {
+            for (let file of Array.from(files)) {
+                const id = Date.now() + Math.random();
+                // OS에 따라 MIME 타입이 비어있을 수 있으므로 확장자 검사 추가
+                const isVideo = file.type.startsWith('video') || (file.name && file.name.match(/\.(mp4|webm|ogg|mov)$/i));
+                const isImage = file.type.startsWith('image') || (file.name && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+                
+                if (!isVideo && !isImage) continue;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    let data = e.target.result;
+                    if (isImage) data = await compressImage(data);
+
+                    const newProj = { 
+                        id, 
+                        type: isVideo ? 'video' : 'image', 
+                        category: isVideo ? 'video' : '2d', 
+                        url: data, thumbnailUrl: '', 
+                        title: isVideo ? '업로드된 영상' : '분석 중...', 
+                        desc: isVideo ? '동영상 파일입니다.' : 'AI가 정보를 읽고 있습니다.', 
+                        tools: '', loading: isImage 
+                    };
+                    state.projects.unshift(newProj);
+                    window.saveData();
+                    window.renderAll();
+
+                    if (isImage) {
+                        const aiResult = await analyzeImage(data, file.type);
+                        const idx = state.projects.findIndex(x => x.id === id);
+                        if (idx !== -1) {
+                            state.projects[idx] = { ...state.projects[idx], ...aiResult, loading: false };
+                            window.saveData();
+                            window.renderAll();
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- Infrastructure & State Managers ---
+        function isEditMode() { return document.body.classList.contains('edit-mode'); }
+        document.getElementById('edit-mode-toggle').addEventListener('change', (e) => {
+            document.body.classList.toggle('edit-mode', e.target.checked);
+            ['hero-title', 'hero-desc', 'about-text', 'quote', 'site-logo', 'contact-title'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.contentEditable = e.target.checked;
+            });
+            window.renderAll();
+            if(!e.target.checked) window.saveData();
+        });
+
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', window.toggleMobileMenu);
+
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.onclick = () => document.getElementById('file-input').click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('bg-blue-50');
+        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('bg-blue-50'); handleFiles(e.dataTransfer.files); };
+        document.getElementById('file-input').onchange = (e) => { 
+            handleFiles(e.target.files); 
+            e.target.value = ''; // 동일 파일 재선택 시에도 업로드 되도록 값 초기화
+        };
+
+        window.openModal = function() { document.getElementById('link-modal').classList.add('active'); }
+        window.closeModal = function() { document.getElementById('link-modal').classList.remove('active'); }
+        
+        window.addLinkProject = function() {
+            const url = document.getElementById('url-input').value;
+            const thumb = document.getElementById('thumb-input').value;
+            const category = document.getElementById('category-input-text').value || 'video';
+            if(!url) return;
+            let finalUrl = url;
+            if (url.includes('youtube.com/watch?v=')) finalUrl = url.replace('watch?v=', 'embed/');
+            else if (url.includes('youtu.be/')) finalUrl = 'https://www.youtube.com/embed/' + url.split('/').pop();
+
+            state.projects.unshift({ id: Date.now(), type: 'video', category, url: finalUrl, thumbnailUrl: thumb, title: '새 링크 프로젝트', desc: '설명 입력', tools: 'Video' });
+            window.saveData(); window.renderAll(); window.closeModal();
+            document.getElementById('url-input').value = '';
+        }
+
+        window.deleteProject = function(id) { state.projects = state.projects.filter(p => p.id !== id); window.saveData(); window.renderAll(); }
+        window.updateProject = function(id, field, val) { const p = state.projects.find(x => x.id === id); if(p){ p[field] = val; window.saveData(); } }
+        
+        function renderSecondaryInfo() {
+            const cList = document.getElementById('career-list'); cList.innerHTML = '';
+            state.careers.forEach(c => {
+                const item = document.createElement('div');
+                item.className = "flex gap-4 group relative text-left p-4 bg-white/50 rounded-2xl border border-transparent hover:border-blue-100 transition";
+                item.innerHTML = `
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0"><i class="fas fa-briefcase text-xs"></i></div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-sm text-gray-800" contenteditable="${isEditMode()}" onblur="updateCareer(${c.id}, 'title', this.innerText); renderAll();">${c.title}</h4>
+                        <p class="text-[10px] text-blue-500 font-bold uppercase" contenteditable="${isEditMode()}" onblur="updateCareer(${c.id}, 'date', this.innerText); renderAll();">${c.date}</p>
+                        <p class="text-xs text-gray-400 mt-1" contenteditable="${isEditMode()}" onblur="updateCareer(${c.id}, 'desc', this.innerText); renderAll();">${c.desc || ''}</p>
+                    </div>
+                    <button class="edit-only absolute -right-2 -top-2 bg-white text-red-400 border w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition" onclick="deleteCareer(${c.id})"><i class="fas fa-times text-[10px]"></i></button>
+                `;
+                cList.appendChild(item);
+            });
+
+            const sList = document.getElementById('skill-list'); sList.innerHTML = '';
+            state.skills.forEach(s => {
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center border-b border-gray-800 pb-2 text-xs group";
+                item.innerHTML = `
+                    <span class="font-bold text-gray-300" contenteditable="${isEditMode()}" onblur="updateSkill(${s.id}, 'name', this.innerText); renderAll();">${s.name}</span>
+                    <div class="flex items-center gap-2 text-blue-400 font-bold">
+                        <span contenteditable="${isEditMode()}" onblur="updateSkill(${s.id}, 'level', this.innerText); renderAll();">${s.level}</span>
+                        <button class="edit-only text-red-500 opacity-0 group-hover:opacity-100" onclick="deleteSkill(${s.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                sList.appendChild(item);
+            });
+
+            const conGrid = document.getElementById('contact-info'); conGrid.innerHTML = '';
+            state.contact.forEach(con => {
+                const item = document.createElement('div');
+                item.className = "bg-gray-800/50 p-6 rounded-2xl relative group border border-gray-700 hover:border-blue-500 transition text-center";
+                item.innerHTML = `
+                    <i class="fas ${con.icon || 'fa-link'} text-2xl mb-4 text-gray-400 group-hover:text-blue-400 transition"></i>
+                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1" contenteditable="${isEditMode()}" onblur="updateContact(${con.id}, 'label', this.innerText); renderAll();">${con.label}</p>
+                    <div class="text-sm font-bold text-white mb-2" contenteditable="${isEditMode()}" onblur="updateContact(${con.id}, 'value', this.innerText); renderAll();">${con.value}</div>
+                    <div class="edit-only mt-2 text-[8px] text-gray-600 bg-black/20 p-1 rounded">
+                        Icon: <input type="text" class="bg-transparent border-b border-gray-700 outline-none w-16" value="${con.icon || ''}" onchange="updateContact(${con.id}, 'icon', this.value); renderAll();">
+                    </div>
+                    <button class="edit-only absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100" onclick="deleteContact(${con.id})"><i class="fas fa-times"></i></button>
+                `;
+                conGrid.appendChild(item);
+            });
+        }
+
+        window.addCareer = function() { state.careers.push({ id: Date.now(), title: '새 경력', date: '2024.XX', desc: '설명' }); window.saveData(); window.renderAll(); }
+        window.deleteCareer = function(id) { state.careers = state.careers.filter(c => c.id !== id); window.saveData(); window.renderAll(); }
+        window.updateCareer = function(id, f, v) { const x = state.careers.find(i => i.id === id); if(x){ x[f] = v; window.saveData(); } }
+        window.addSkill = function() { state.skills.push({ id: Date.now(), name: 'Skill', level: '80%' }); window.saveData(); window.renderAll(); }
+        window.deleteSkill = function(id) { state.skills = state.skills.filter(s => s.id !== id); window.saveData(); window.renderAll(); }
+        window.updateSkill = function(id, f, v) { const x = state.skills.find(i => i.id === id); if(x){ x[f] = v; window.saveData(); } }
+        window.addContact = function() { state.contact.push({ id: Date.now(), label: 'SNS', value: '@id', icon: 'fa-link' }); window.saveData(); window.renderAll(); }
+        window.deleteContact = function(id) { state.contact = state.contact.filter(c => c.id !== id); window.saveData(); window.renderAll(); }
+        window.updateContact = function(id, f, v) { const x = state.contact.find(i => i.id === id); if(x){ x[f] = v; window.saveData(); } }
     </script>
 </body>
 </html>
