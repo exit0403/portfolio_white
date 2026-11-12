@@ -391,7 +391,6 @@
                         const parsed = publicSnap.data();
                         state = { ...defaultData, ...parsed };
                         if (parsed.hero) state.hero = { ...defaultData.hero, ...parsed.hero };
-                        localStorage.setItem('portfolio_data_v10', JSON.stringify(state));
                         window.renderAll();
                         return;
                     }
@@ -412,14 +411,8 @@
                 }
             }
             
-            // 클라우드 데이터를 못 가져오면 로컬 스토리지 데이터로 폴백
-            const localData = localStorage.getItem('portfolio_data_v10') || localStorage.getItem('portfolio_data_v9');
-            if (localData) {
-                state = { ...defaultData, ...JSON.parse(localData) };
-                window.saveData();
-            } else {
-                state = JSON.parse(JSON.stringify(defaultData));
-            }
+            // 공개 화면은 브라우저별 localStorage를 사용하지 않고 동일한 기본값을 표시합니다.
+            state = JSON.parse(JSON.stringify(defaultData));
             window.renderAll();
         }
 
@@ -439,24 +432,18 @@
             if(qt) state.quote = qt.innerText;
             if(ct) state.contactTitle = ct.innerText;
             
-            try {
-                localStorage.setItem('portfolio_data_v10', JSON.stringify(state));
-            } catch(e) {
-                console.warn("로컬 저장소 공간 부족", e);
-            }
-
             if (!isAdmin || !db) {
-                showToast("기기에 저장되었습니다. (로컬 모드)");
+                showToast("공용 저장소에 연결되지 않아 저장되지 않았습니다.", true);
                 return;
             }
             
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'portfolio', 'main_data');
                 await setDoc(docRef, state);
-                showToast("기기 및 클라우드에 저장되었습니다.");
+                showToast("공용 클라우드에 저장되었습니다.");
             } catch (e) {
                 console.error(e);
-                showToast("기기에만 저장되었습니다. (클라우드 용량 초과)", true);
+                showToast("공용 클라우드 저장에 실패했습니다.", true);
             }
         }
 
@@ -626,14 +613,7 @@
 
         // --- Initialization ---
         window.onload = () => {
-            const savedData = localStorage.getItem('portfolio_data_v10') || localStorage.getItem('portfolio_data_v9');
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                state = { ...defaultData, ...parsed }; 
-                if (parsed.hero) state.hero = { ...defaultData.hero, ...parsed.hero };
-            } else {
-                state = JSON.parse(JSON.stringify(defaultData));
-            }
+            state = JSON.parse(JSON.stringify(defaultData));
             window.renderAll();
         };
 
