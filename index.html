@@ -360,8 +360,13 @@
                         await signInAnonymously(auth);
                     }
                 };
-                // 익명 사용자는 공개 데이터 열람만, 이메일 사용자는 관리자 편집을 수행합니다.
-                initAuth();
+                // 익명 인증은 관리자 설정에 따라 비활성화될 수 있습니다.
+                // 이 경우에도 공개 방문자는 인증 없이 Firestore 읽기를 계속합니다.
+                initAuth().catch(async (error) => {
+                    console.warn("익명 인증을 사용할 수 없어 공개 읽기 모드로 전환합니다:", error);
+                    currentUser = { isAnonymous: true, uid: 'public-guest' };
+                    await loadDataFromCloud();
+                });
 
                 onAuthStateChanged(auth, async (user) => {
                     isAdmin = Boolean(user && !user.isAnonymous);
